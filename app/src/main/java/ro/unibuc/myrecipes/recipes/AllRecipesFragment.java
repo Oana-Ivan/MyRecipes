@@ -3,14 +3,38 @@ package ro.unibuc.myrecipes.recipes;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
+import android.widget.Toast;
+
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
 
 import ro.unibuc.myrecipes.R;
+import ro.unibuc.myrecipes.models.Recipe;
+
+import static android.content.ContentValues.TAG;
 
 public class AllRecipesFragment extends Fragment {
+    private SearchView searchView;
+    private RecyclerView recipesRV;
+    private AllRecipesAdapter recipesAdapter;
+    private RecyclerView.LayoutManager recipesLayoutManager;
+
+    private ArrayList<Recipe> recipes, recipesAll;
+
+    // cloud database
+    public FirebaseFirestore db;
+    public CollectionReference recipesCollection;
 
     public AllRecipesFragment() {
         // Required empty public constructor
@@ -19,6 +43,81 @@ public class AllRecipesFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_all_recipes, container, false);
+        View view = inflater.inflate(R.layout.fragment_all_recipes, container, false);
+
+        searchView = view.findViewById(R.id.fragment_all_recipes_search_view);
+        recipesRV = view.findViewById(R.id.fragment_all_recipes_rv);
+        recipesRV.setHasFixedSize(true);
+        recipesLayoutManager = new LinearLayoutManager(getContext());
+
+        // Retrieve recipes data from Firestore
+        db = FirebaseFirestore.getInstance();
+        recipesCollection = db.collection("Recipes");
+        recipesCollection.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                recipes = new ArrayList<>();
+                for (QueryDocumentSnapshot currentRecipeDocument : task.getResult()) {
+                    recipes.add(currentRecipeDocument.toObject(Recipe.class));
+                }
+                recipesAll = recipes;
+                recipesAdapter = new AllRecipesAdapter(recipes);
+                recipesRV.setLayoutManager(recipesLayoutManager);
+                recipesRV.setAdapter(recipesAdapter);
+
+                // search
+                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        filter(newText);
+                        return false;
+                    }
+                });
+
+
+                // click on animal
+                recipesAdapter.setOnItemClickListener(position -> {
+                    // TODO Redirect to recipe page
+//                    Intent intent = new Intent(getContext(), RecipeDetailsFragment.class);
+//                    intent.putExtra("Recipe", recipes.get(position));
+//                    startActivity(intent);
+                });
+
+                Log.d(TAG, recipes.toString());
+            } else {
+                Log.d(TAG, "Error getting documents: ", task.getException());
+            }
+        });
+
+        return view;
     }
+
+    private void filter(String text) {
+        ArrayList<Recipe> filteredList = new ArrayList<>();
+
+        for (Recipe item : recipesAll) {
+            if (item.getTitle().toLowerCase().contains(text.toLowerCase())
+                    || item.getIngredients().toLowerCase().contains(text.toLowerCase())
+                    || item.getSteps().toLowerCase().contains(text.toLowerCase())) {
+                filteredList.add(item);
+            }
+        }
+
+        if (filteredList.isEmpty()) {
+            Toast.makeText(getContext(), "No Data Found..", Toast.LENGTH_SHORT).show();
+        }
+
+        recipes = filteredList;
+        recipesAdapter.filterList(recipes);
+
+        if (text.equals("")) {
+            recipesAdapter.filterList(recipesAll);
+        }
+        recipesAdapter.notifyDataSetChanged();
+    }
+
 }

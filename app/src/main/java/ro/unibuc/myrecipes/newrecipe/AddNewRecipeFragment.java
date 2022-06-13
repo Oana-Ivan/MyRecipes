@@ -4,8 +4,10 @@ import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -19,11 +21,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 
@@ -84,34 +89,53 @@ public class AddNewRecipeFragment extends Fragment {
                         progressDialog.setMessage("Storing Data...");
                         progressDialog.show();
 
-                        storageReference.child("recipe_image").child(recipeID + ".jpg").putBytes(byteArrayRecipeImage);
-                        imageURL = storageReference.child("recipe_image").child(recipeID + ".jpg").toString();
+                        // TODO Check if image is null
+                        UploadTask image_path = storageReference.child("recipe_image").child(recipeID + ".jpg").putBytes(byteArrayRecipeImage);
+//                        imageURL = storageReference.child("recipe_image").child(recipeID + ".jpg").toString();
 
-                        Recipe newRecipe = new Recipe(recipeID, imageURL, title, ingredients, steps);
-                        recipesCollection.document(recipeID).set(newRecipe).addOnCompleteListener(task1 -> {
-                            if (task1.isSuccessful()) {
-                                progressDialog.dismiss();
-                                Toast.makeText(getContext(), "Recipe Data Stored Successfully", Toast.LENGTH_LONG).show();
+                        Task<Uri> urlTask = image_path.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                            @Override
+                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task1) throws Exception {
+                                if (!task1.isSuccessful()) {
+                                    throw task1.getException();
+                                }
 
-                                // Redirect to All recipes
-                                AllRecipesFragment allRecipesFragment = new AllRecipesFragment();
-                                FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-                                ft.replace(R.id.container, allRecipesFragment);
-                                ft.commit();
-                            } else {
-                                String error = task1.getException().getMessage();
-                                Toast.makeText(getContext(), "(FIRESTORE Error) : " + error, Toast.LENGTH_LONG).show();
+                                // Continue with the task to get the download URL
+                                return storageReference.child("recipe_image").child(recipeID + ".jpg").getDownloadUrl();
                             }
-                            progressDialog.dismiss();
+                        }).addOnCompleteListener(task1 -> {
+                            if (task1.isSuccessful()) {
+                                Uri downloadUri = task1.getResult();
+                                image = downloadUri.toString();
+
+                                Recipe newRecipe = new Recipe(recipeID, image, title, ingredients, steps);
+                                recipesCollection.document(recipeID).set(newRecipe).addOnCompleteListener(task2 -> {
+                                    if (task2.isSuccessful()) {
+                                        progressDialog.dismiss();
+                                        Toast.makeText(getContext(), "Recipe Data Stored Successfully", Toast.LENGTH_LONG).show();
+
+                                        // Redirect to All recipes
+                                        AllRecipesFragment allRecipesFragment = new AllRecipesFragment();
+                                        FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+                                        ft.replace(R.id.container, allRecipesFragment);
+                                        ft.commit();
+                                    } else {
+                                        String error = task1.getException().getMessage();
+                                        Toast.makeText(getContext(), "(FIRESTORE Error) : " + error, Toast.LENGTH_LONG).show();
+                                    }
+                                    progressDialog.dismiss();
+                                });
+                            }
                         });
-                        }
+                    }
                 });
-                
-            } else {
+            }
+            else {
                 Log.d(TAG, "Error getting documents: ", task.getException());
                 collectionSize = 0;
             }
         });
+
         return view;
     }
 
