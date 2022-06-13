@@ -11,4 +11,7 @@
     <string name="recipes">Recipes</string>
     <string name="recipe_details">recipe details</string>
     <string name="recipe_title">Title</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="recipe_steps">Recipes steps</string>
+    <string name="send_recipe">Send recipe</string>
 </resources>

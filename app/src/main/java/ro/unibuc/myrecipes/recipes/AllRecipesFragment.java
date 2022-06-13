@@ -3,6 +3,7 @@ package ro.unibuc.myrecipes.recipes;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -78,13 +79,20 @@ public class AllRecipesFragment extends Fragment {
                     }
                 });
 
-
-                // click on animal
+                // click on recipe
                 recipesAdapter.setOnItemClickListener(position -> {
-                    // TODO Redirect to recipe page
-//                    Intent intent = new Intent(getContext(), RecipeDetailsFragment.class);
-//                    intent.putExtra("Recipe", recipes.get(position));
-//                    startActivity(intent);
+                    // Redirect to recipe page
+                    FragmentTransaction ft =  getActivity().getSupportFragmentManager().beginTransaction();
+                    ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                    RecipeDetailsFragment recipeDetailsFragment = new RecipeDetailsFragment();
+
+                    Bundle bundle = new Bundle();
+                    Recipe recipe = recipes.get(position);
+                    bundle.putSerializable("Recipe", recipe);
+                    recipeDetailsFragment.setArguments(bundle);
+                    ft.replace(R.id.container, recipeDetailsFragment);
+                    ft.addToBackStack(null);
+                    ft.commit();
                 });
 
                 Log.d(TAG, recipes.toString());
