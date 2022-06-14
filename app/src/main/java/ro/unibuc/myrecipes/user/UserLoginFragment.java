@@ -53,14 +53,21 @@ public class UserLoginFragment extends Fragment {
             assignData();
             initDB();
             if (newUserCB.isChecked()) {
-                // save new user
-                int noOfUsers = userDao.getSize();
-                String newUserId = "user_" + (noOfUsers++);
-                User newUser = new User(newUserId, username, password);
-                userDao.insertAll(newUser);
+                User existingUser = userDao.findByUsername(username);
+                if (existingUser == null) {
+                    // save new user
+                    int noOfUsers = userDao.getSize();
+                    String newUserId = "user_" + (noOfUsers++);
+                    User newUser = new User(newUserId, username, password);
+                    userDao.insertAll(newUser);
 
-                saveCredentialsInSharedPreferences();
-                redirectToUserPage();
+                    saveCredentialsInSharedPreferences();
+                    redirectToUserPage();
+                }
+                else {
+                    Toast.makeText(getContext(), "Username taken", Toast.LENGTH_SHORT).show();
+                    usernameET.setText("");
+                }
             }
             else {
                 // check credentials

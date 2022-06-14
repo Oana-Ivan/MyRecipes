@@ -12,8 +12,16 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.room.Room;
+
+import java.util.List;
 
 import ro.unibuc.myrecipes.R;
+import ro.unibuc.myrecipes.models.User;
+import ro.unibuc.myrecipes.user.room.AppDatabase;
+import ro.unibuc.myrecipes.user.room.RecentViewedRecipes;
+import ro.unibuc.myrecipes.user.room.RecentViewedRecipesDao;
+import ro.unibuc.myrecipes.user.room.UserDao;
 
 import static ro.unibuc.myrecipes.user.UserLoginFragment.PASSWORD;
 import static ro.unibuc.myrecipes.user.UserLoginFragment.USERNAME;
@@ -25,6 +33,11 @@ public class UserFragment extends Fragment {
     private ImageView welcomeImage;
 
     String username, recipes;
+
+    AppDatabase roomDB;
+    UserDao userDao;
+    RecentViewedRecipesDao recentViewedRecipesDao;
+    List<User> users;
 
     public UserFragment() {
         // Required empty public constructor
@@ -41,6 +54,7 @@ public class UserFragment extends Fragment {
         AnimateGlass1.setDuration(6000);
         AnimateGlass1.start();
 
+        initDB();
         assignData();
 
         logoutTV.setOnClickListener(l -> {
@@ -65,8 +79,12 @@ public class UserFragment extends Fragment {
             usernameTV.setText(username.toUpperCase());
             logoutTV.setVisibility(View.VISIBLE);
 
-            // Todo get recipes from database
-            recipes = "to do";
+            // get recipes from database
+            List<RecentViewedRecipes> recipesList = recentViewedRecipesDao.loadFirst5ByUsername(username);
+            recipes = "";
+            for (RecentViewedRecipes r : recipesList) {
+                recipes += "\n- " + r.recipeTitle;
+            }
             recipesTV.setText(recipes);
         }
         else {
@@ -81,6 +99,14 @@ public class UserFragment extends Fragment {
                 ft.commit();
             });
         }
+    }
+
+    private void initDB() {
+        roomDB = Room.databaseBuilder(getContext(),
+                AppDatabase.class, "database-name").allowMainThreadQueries().build();
+        userDao = roomDB.userDao();
+        recentViewedRecipesDao = roomDB.recentViewedRecipesDao();
+        users = userDao.getAll();
     }
 
     private void logout() {

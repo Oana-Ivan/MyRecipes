@@ -24,6 +24,12 @@ public interface UserDao {
             "password LIKE :password LIMIT 1")
     User findByUsernameAndPassword(String username, String password);
 
+    @Query("SELECT uid FROM user WHERE username LIKE :username LIMIT 1")
+    String findByUserIdByUsername(String username);
+
+    @Query("SELECT * FROM user WHERE username LIKE :username LIMIT 1")
+    User findByUsername(String username);
+
     @Insert
     void insertAll(User... users);
 

@@ -1,10 +1,13 @@
 package ro.unibuc.myrecipes.recipes;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.room.Room;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,8 +17,18 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import java.util.List;
+
 import ro.unibuc.myrecipes.R;
 import ro.unibuc.myrecipes.models.Recipe;
+import ro.unibuc.myrecipes.models.User;
+import ro.unibuc.myrecipes.user.room.AppDatabase;
+import ro.unibuc.myrecipes.user.room.RecentViewedRecipes;
+import ro.unibuc.myrecipes.user.room.RecentViewedRecipesDao;
+import ro.unibuc.myrecipes.user.room.UserDao;
+
+import static ro.unibuc.myrecipes.user.UserLoginFragment.USERNAME;
+import static ro.unibuc.myrecipes.user.UserLoginFragment.USER_PREFERENCES;
 
 public class RecipeDetailsFragment extends Fragment {
     private Recipe currentRecipe;
@@ -39,6 +52,8 @@ public class RecipeDetailsFragment extends Fragment {
 
         assignData(currentRecipe);
 
+        incrementUserCount();
+
         sendRecipeBtn.setOnClickListener(btn -> {
             String recipe = recipeToString(currentRecipe);
 
@@ -52,6 +67,23 @@ public class RecipeDetailsFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void incrementUserCount() {
+        SharedPreferences sharedpreferences = getActivity().getSharedPreferences(USER_PREFERENCES, Context.MODE_PRIVATE);
+        String username = sharedpreferences.getString(USERNAME, "");
+
+        AppDatabase roomDB = Room.databaseBuilder(getContext(),
+                AppDatabase.class, "database-name").allowMainThreadQueries().build();
+        UserDao userDao = roomDB.userDao();
+        RecentViewedRecipesDao recentViewedRecipesDao = roomDB.recentViewedRecipesDao();
+
+        List<User> users = userDao.getAll();
+        List<RecentViewedRecipes> recentViewedRecipes = recentViewedRecipesDao.getAll();
+
+        RecentViewedRecipes newRecentViewedRecipes = new RecentViewedRecipes(recentViewedRecipesDao.getSize(), userDao.findByUserIdByUsername(username), username, currentRecipe.getId(), currentRecipe.getTitle());
+
+        recentViewedRecipesDao.insertAll(newRecentViewedRecipes);
     }
 
     private String recipeToString(Recipe currentRecipe) {
