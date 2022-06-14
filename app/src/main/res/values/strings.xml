@@ -14,4 +14,13 @@
     <string name="ingredients">Ingredients</string>
     <string name="recipe_steps">Recipes steps</string>
     <string name="send_recipe">Send recipe</string>
+    <string name="username">Username</string>
+    <string name="recently_viewed_recipes">Recently viewed recipes:</string>
+    <string name="dash">-</string>
+    <string name="no_data">No data yet</string>
+    <string name="log_in">Login</string>
+    <string name="enter_username">Enter username</string>
+    <string name="enter_password">Enter password</string>
+    <string name="new_user">New user</string>
+    <string name="logout">Logout</string>
 </resources>
