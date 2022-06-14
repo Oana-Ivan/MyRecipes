@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".newrecipe.AddNewRecipeFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/color_schema_background_2">
+
+        <TextView
+            android:id="@+id/fragment_add_new_recipe_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:background="@color/color_schema_light_transparent"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/add_recipe"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/fragment_add_new_recipe_tv"
+            app:layout_constraintVertical_bias="0.0">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:layout_margin="15dp"
+                android:padding="10dp"
+                app:cardCornerRadius="30dp"
+                >
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="1000dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/color_schema_background_2_transparent"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <ImageView
+                            android:id="@+id/fragment_add_new_recipe_img"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:padding="10dp"
+                            android:src="@drawable/recipe"
+                            />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/tv_upload_picture_message"
+                            android:layout_marginBottom="10dp"
+                            />
+
+                        <EditText
+                            android:id="@+id/fragment_add_new_recipe_et_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:background="@color/white"
+                            android:hint="@string/enter_recipe_title"
+                            android:padding="5dp"
+                            android:layout_marginBottom="10dp"
+                            />
+                        <EditText
+                            android:id="@+id/fragment_add_new_recipe_et_ingredients"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+
+                            android:background="@color/white"
+                            android:hint="@string/enter_ingredients"
+                            android:padding="5dp"
+                            android:layout_marginBottom="10dp"
+                            />
+                        <EditText
+                            android:id="@+id/fragment_add_new_recipe_et_steps"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+
+                            android:background="@color/white"
+                            android:hint="@string/enter_steps"
+                            android:padding="5dp"
+                            android:layout_marginBottom="10dp"
+                            />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/fragment_add_new_recipe_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:textSize="15sp"
+                            android:gravity="center"
+                            android:layout_gravity="center"
+                            android:background="@drawable/button_light"
+                            android:text="@string/add_recipe"
+                            android:textColor="@color/white"
+                            android:padding="5dp"/>
+                    </LinearLayout>
+                </ScrollView>
+
+            </androidx.cardview.widget.CardView>
+        </ScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>
